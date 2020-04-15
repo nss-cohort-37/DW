@@ -8,11 +8,10 @@ namespace DogWalkerMVC.Models
     public class Walk
     {
         public int Id { get; set; }
+        public double Date { get; set; }
+        public string Address { get; set; }
         public int Duration { get; set; }
         public int WalkerId { get; set; }
-        public Walker Walker { get; set; }
         public int DogId { get; set; }
-        public Dog Dog { get; set; }
-
     }
 }

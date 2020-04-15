@@ -125,9 +125,6 @@ namespace DogWalkerMVC.Controllers
                     return walkers;
                 }
             }
-
-
-            
         }
     }
 }
