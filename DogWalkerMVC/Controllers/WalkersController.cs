@@ -11,10 +11,10 @@ using Microsoft.Extensions.Configuration;
 
 namespace DogWalkerMVC.Controllers
 {
-    public class NeighborhoodsController : Controller
+    public class WalkersController : Controller
     {
         private readonly IConfiguration _config;
-        public NeighborhoodsController(IConfiguration config)
+        public WalkersController(IConfiguration config)
         {
             _config = config;
         }
@@ -28,7 +28,7 @@ namespace DogWalkerMVC.Controllers
         }
 
 
-        // GET: Neighborhoods
+        // GET: Walkers
         public ActionResult Index()
         {
             using (SqlConnection conn = Connection)
@@ -36,40 +36,49 @@ namespace DogWalkerMVC.Controllers
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"SELECT n.Id, n.[Name], COUNT(w.NeighborhoodId) as 'Walkers'
-                                        FROM Neighborhood n
-                                        LEFT JOIN Walker w
-                                        ON	w.NeighborhoodId = n.Id
-                                        GROUP BY n.Name, n.Id ";
+                    cmd.CommandText = @"SELECT wr.Id, wr.[Name], wr.NeighborhoodId, n.[Name] as 'NeighborhoodName'
+                                        FROM Walker wr
+                                        LEFT JOIN Neighborhood n 
+                                        ON n.Id = wr.NeighborhoodId ";
 
                     var reader = cmd.ExecuteReader();
-                    var walkers = new List<NeighborhoodViewModel>();
+                    var walkers = new List<WalkerViewModel>();
 
                     while (reader.Read())
                     {
-                        walkers.Add(new NeighborhoodViewModel()
+                        walkers.Add(new WalkerViewModel()
                         {
                             Id = reader.GetInt32(reader.GetOrdinal("Id")),
                             Name = reader.GetString(reader.GetOrdinal("Name")),
-                            Walkers = reader.GetInt32(reader.GetOrdinal("Walkers"))
+                            NeighborhoodId = reader.GetInt32(reader.GetOrdinal("NeighborhoodId"))
                         });
+
+                        if (!reader.IsDBNull(reader.GetInt32(reader.GetOrdinal("NeighborhoodId")))
+                        {
+                            walkers.NeighborhoodId = reader.GetInt32(reader.GetOrdinal("NeighborhoodId"));
+                        }
+                        else
+                        {
+                            walkers.NeighborhoodId = null;
+                        }
                     }
+
                     reader.Close();
                     return View(walkers);
                 }
             }
         }
 
-        // GET: Neighborhoods/Create
+        // GET: Walkers/Create
         public ActionResult Create()
         {
             return View();
         }
 
-        // POST: Neighborhoods/Create
+        // POST: Walkers/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(Neighborhood neighborhood)
+        public ActionResult Create(Walker walker)
         {
             try
             {
@@ -78,14 +87,14 @@ namespace DogWalkerMVC.Controllers
                     conn.Open();
                     using (SqlCommand cmd = conn.CreateCommand())
                     {
-                        cmd.CommandText = @"INSERT INTO Neighborhood (Name)
+                        cmd.CommandText = @"INSERT INTO Walker (Name)
                                             OUTPUT INSERTED.Id
                                             VALUES (@name)";
 
-                        cmd.Parameters.Add(new SqlParameter("@name", neighborhood.Name));
+                        cmd.Parameters.Add(new SqlParameter("@name", walker.Name));
 
                         var id = (int)cmd.ExecuteScalar();
-                        neighborhood.Id = id;
+                        walker.Id = id;
                         return RedirectToAction(nameof(Index));
                     }
                 }
@@ -96,17 +105,17 @@ namespace DogWalkerMVC.Controllers
             }
         }
 
-        // GET: Neighborhoods/Edit/5
+        // GET: Walkers/Edit/5
         public ActionResult Edit(int id)
         {
-            var neighborhood = GetNeighborhoodById(id);
-            return View(neighborhood);
+            var walker = GetWalkerById(id);
+            return View(walker);
         }
 
-        // POST: Neighborhoods/Edit/5
+        // POST: Walkers/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, Neighborhood neighborhood)
+        public ActionResult Edit(int id, Walker walker)
         {
             try
             {
@@ -115,11 +124,11 @@ namespace DogWalkerMVC.Controllers
                     conn.Open();
                     using (SqlCommand cmd = conn.CreateCommand())
                     {
-                        cmd.CommandText = @"UPDATE Neighborhood
+                        cmd.CommandText = @"UPDATE Walker
                                            SET Name = @name
                                                WHERE Id = @id";
 
-                        cmd.Parameters.Add(new SqlParameter("@name", neighborhood.Name));
+                        cmd.Parameters.Add(new SqlParameter("@name", walker.Name));
 
                         cmd.Parameters.Add(new SqlParameter("@id", id));
 
@@ -138,17 +147,17 @@ namespace DogWalkerMVC.Controllers
             }
         }
 
-        // GET: Neighborhoods/Delete/5
+        // GET: Walkers/Delete/5
         public ActionResult Delete(int id)
         {
-            var neighborhood = GetNeighborhoodById(id);
-            return View(neighborhood);
+            var walker = GetWalkerById(id);
+            return View(walker);
         }
 
-        // POST: Neighborhoods/Delete/5
+        // POST: Walkers/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, Neighborhood neighborhood)
+        public ActionResult Delete(int id, Walker walker)
         {
             try
             {
@@ -157,7 +166,7 @@ namespace DogWalkerMVC.Controllers
                     conn.Open();
                     using (SqlCommand cmd = conn.CreateCommand())
                     {
-                        cmd.CommandText = @"DELETE FROM Neighborhood WHERE Id = @id";
+                        cmd.CommandText = @"DELETE FROM Walker WHERE Id = @id";
                         cmd.Parameters.Add(new SqlParameter("@id", id));
 
                         int rowsAffected = cmd.ExecuteNonQuery();
@@ -168,35 +177,36 @@ namespace DogWalkerMVC.Controllers
             }
             catch
             {
-                return View(neighborhood);
+                return View(walker);
             }
         }
 
-        private Neighborhood GetNeighborhoodById(int id)
+        private Walker GetWalkerById(int id)
         {
             using (SqlConnection conn = Connection)
             {
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = "SELECT n.Id, n.Name FROM Neighborhood n WHERE n.Id = @id";
+                    cmd.CommandText = "SELECT wr.Id, wr.[Name], NeighborhoodId, FROM Walker wr WHERE wr.Id = @id";
 
                     cmd.Parameters.Add(new SqlParameter("@id", id));
 
                     var reader = cmd.ExecuteReader();
-                    Neighborhood neighborhood = null;
+                    Walker walker = null;
 
                     if (reader.Read())
                     {
-                        neighborhood = new Neighborhood()
+                        walker = new Walker()
                         {
                             Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                            Name = reader.GetString(reader.GetOrdinal("Name"))
+                            Name = reader.GetString(reader.GetOrdinal("Name")),
+                            NeighborhoodId = reader.GetInt32(reader.GetOrdinal("NeighborhoodId"))
                         };
 
                     }
                     reader.Close();
-                    return neighborhood;
+                    return walker;
                 }
             }
         }
