@@ -13,7 +13,7 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Id)
+                @*@Html.DisplayNameFor(model => model.Id)*@
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Name)
@@ -28,7 +28,7 @@
 @foreach (var item in Model) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Id)
+                @*@Html.DisplayFor(modelItem => item.Id)*@
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Name)
@@ -37,16 +37,16 @@
                 @Html.DisplayFor(modelItem => item.NeighborhoodId)
             </td>
             <td>
-                <a asp-action="Edit"
+                @*<a asp-action="Edit"
                    asp-route-id="@item.Id">
 
                     <input type="submit" value="Edit" class="btn btn-primary" />
-                </a>
-                <a asp-action="Delete"
+                </a>*@
+                @*<a asp-action="Delete"
                    asp-route-id="@item.Id">
 
                     <input type="submit" value="Delete" class="btn btn-primary" />
-                </a>
+                </a>*@
             </td>
         </tr>
 }

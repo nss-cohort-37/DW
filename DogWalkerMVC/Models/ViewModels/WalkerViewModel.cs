@@ -10,5 +10,6 @@ namespace DogWalkerMVC.Models.ViewModels
         public int Id { get; set; }
         public string Name { get; set; }
         public int NeighborhoodId { get; set; }
+        public Neighborhood Neighborhood { get; set; }
     }
 }
