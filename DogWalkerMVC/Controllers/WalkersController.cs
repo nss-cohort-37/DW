@@ -34,10 +34,10 @@ namespace DogWalkerMVC.Controllers
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"SELECT wr.Id, wr.[Name], wr.NeighborhoodId, n.[Name] as 'NeighborhoodName'
+                    cmd.CommandText = @"SELECT wr.Id, wr.Name, wr.NeighborhoodId, n.Name as NeighborhoodName, n.Name 
                                         FROM Walker wr
                                         LEFT JOIN Neighborhood n 
-                                        ON n.Id = wr.NeighborhoodId ";
+                                        ON wr.NeighborhoodId = n.Id ";
 
                     var reader = cmd.ExecuteReader();
                     var walkers = new List<WalkerViewModel>();
@@ -48,8 +48,22 @@ namespace DogWalkerMVC.Controllers
                         {
                             Id = reader.GetInt32(reader.GetOrdinal("Id")),
                             Name = reader.GetString(reader.GetOrdinal("Name")),
-                            NeighborhoodId = reader.GetInt32(reader.GetOrdinal("NeighborhoodId"))
+                            //NeighborhoodId = reader.GetInt32(reader.GetOrdinal("NeighborhoodId")),
+                            //Neighborhood = new Neighborhood
+                            //{
+                            //    Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            //    Name = reader.GetString(reader.GetOrdinal("Name"))
+                            //}
                         });
+
+                        //if (!reader.IsDBNull(reader.GetInt32(reader.GetOrdinal("NeighborhoodId")))
+                        //{
+                        //    walkers.NeighborhoodId = reader.GetInt32(reader.GetOrdinal("NeighborhoodId"));
+                        //}
+                        //else
+                        //{
+                        //    walkers.NeighborhoodId = null;
+                        //}
                     }
 
                     reader.Close();
@@ -177,7 +191,7 @@ namespace DogWalkerMVC.Controllers
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = "SELECT wr.Id, wr.[Name], NeighborhoodId, FROM Walker wr WHERE wr.Id = @id";
+                    cmd.CommandText = "SELECT wr.Id, wr.Name FROM Walker wr WHERE wr.Id = @id";
 
                     cmd.Parameters.Add(new SqlParameter("@id", id));
 
@@ -189,10 +203,9 @@ namespace DogWalkerMVC.Controllers
                         walker = new Walker()
                         {
                             Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                            Name = reader.GetString(reader.GetOrdinal("Name")),
-                            NeighborhoodId = reader.GetInt32(reader.GetOrdinal("NeighborhoodId"))
-                        };
+                            Name = reader.GetString(reader.GetOrdinal("Name"))
 
+                        };
                     }
                     reader.Close();
                     return walker;
