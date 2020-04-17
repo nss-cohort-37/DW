@@ -50,15 +50,6 @@ namespace DogWalkerMVC.Controllers
                             Name = reader.GetString(reader.GetOrdinal("Name")),
                             NeighborhoodId = reader.GetInt32(reader.GetOrdinal("NeighborhoodId"))
                         });
-
-                        if (!reader.IsDBNull(reader.GetInt32(reader.GetOrdinal("NeighborhoodId")))
-                        {
-                            walkers.NeighborhoodId = reader.GetInt32(reader.GetOrdinal("NeighborhoodId"));
-                        }
-                        else
-                        {
-                            walkers.NeighborhoodId = null;
-                        }
                     }
 
                     reader.Close();
